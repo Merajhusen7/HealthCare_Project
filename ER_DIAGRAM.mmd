@@ -1,0 +1,260 @@
+erDiagram
+    PATIENT ||--o| PATIENT_ACCOUNT : "may authenticate with"
+    PATIENT ||--o{ APPOINTMENT : "books"
+    PATIENT ||--o{ SERVICE_REQUEST : "submits"
+    PATIENT ||--o{ CONSENT : "grants"
+    PATIENT ||--o{ PATIENT_ADDRESS : "has"
+    PATIENT_ACCOUNT ||--o{ ACCOUNT_SESSION : "creates"
+
+    SPECIALTY ||--o{ DOCTOR_SPECIALTY : "is assigned to"
+    DOCTOR ||--o{ DOCTOR_SPECIALTY : "has"
+    DOCTOR ||--o{ DOCTOR_SERVICE : "offers"
+    DOCTOR ||--o{ APPOINTMENT : "is assigned to"
+    DOCTOR ||--o{ DOCTOR_AVAILABILITY : "defines"
+    DOCTOR ||--o{ SERVICE_REQUEST : "is responsible for"
+
+    FACILITY ||--o{ APPOINTMENT : "hosts"
+    FACILITY ||--o{ DOCTOR_AVAILABILITY : "contains"
+    FACILITY ||--o{ HEALTH_SERVICE : "provides"
+
+    SERVICE_CATEGORY ||--o{ HEALTH_SERVICE : "classifies"
+    HEALTH_SERVICE ||--o{ DOCTOR_SERVICE : "is offered by"
+    HEALTH_SERVICE ||--o{ APPOINTMENT_SERVICE : "is selected in"
+    HEALTH_SERVICE ||--o{ SERVICE_REQUEST : "is requested"
+
+    APPOINTMENT ||--o{ APPOINTMENT_SERVICE : "contains"
+    APPOINTMENT ||--o| SERVICE_REQUEST : "may fulfill"
+    APPOINTMENT ||--o{ APPOINTMENT_STATUS_HISTORY : "has"
+    APPOINTMENT ||--o{ APPOINTMENT_ACTION : "audits"
+
+    SERVICE_REQUEST ||--o{ SERVICE_REQUEST_STATUS_HISTORY : "has"
+    SERVICE_REQUEST ||--o{ REQUEST_RESULT : "produces"
+    REQUEST_RESULT ||--o{ RESULT_DOCUMENT : "has"
+
+    PATIENT {
+        uuid patient_id PK
+        string patient_number UK
+        string first_name
+        string middle_name
+        string last_name
+        date date_of_birth
+        string sex_at_birth
+        string gender
+        string phone
+        string email
+        string preferred_language
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PATIENT_ACCOUNT {
+        uuid account_id PK
+        uuid patient_id FK
+        string identity_provider_id UK
+        string login_identifier UK
+        string status
+        timestamp last_login_at
+        timestamp created_at
+    }
+
+    ACCOUNT_SESSION {
+        uuid session_id PK
+        uuid account_id FK
+        timestamp started_at
+        timestamp expires_at
+        timestamp revoked_at
+        string ip_address
+        string device_context
+    }
+
+    PATIENT_ADDRESS {
+        uuid address_id PK
+        uuid patient_id FK
+        string address_type
+        string line1
+        string line2
+        string city
+        string state_province
+        string postal_code
+        string country
+        boolean is_primary
+    }
+
+    CONSENT {
+        uuid consent_id PK
+        uuid patient_id FK
+        string consent_type
+        string purpose
+        boolean granted
+        timestamp granted_at
+        timestamp expires_at
+        timestamp revoked_at
+    }
+
+    SPECIALTY {
+        uuid specialty_id PK
+        string code UK
+        string name
+        string description
+        boolean is_active
+    }
+
+    DOCTOR {
+        uuid doctor_id PK
+        string registration_number UK
+        string first_name
+        string middle_name
+        string last_name
+        string phone
+        string email
+        string qualifications
+        string status
+    }
+
+    DOCTOR_SPECIALTY {
+        uuid doctor_specialty_id PK
+        uuid doctor_id FK
+        uuid specialty_id FK
+        boolean is_primary
+    }
+
+    FACILITY {
+        uuid facility_id PK
+        string facility_code UK
+        string name
+        string facility_type
+        string phone
+        string email
+        boolean is_active
+    }
+
+    HEALTH_SERVICE {
+        uuid service_id PK
+        uuid category_id FK
+        uuid facility_id FK
+        string code UK
+        string name
+        string description
+        decimal base_price
+        string currency_code
+        integer duration_minutes
+        boolean preparation_required
+        text preparation_instructions
+        boolean is_active
+    }
+
+    SERVICE_CATEGORY {
+        uuid category_id PK
+        string code UK
+        string name
+        string description
+    }
+
+    DOCTOR_SERVICE {
+        uuid doctor_service_id PK
+        uuid doctor_id FK
+        uuid service_id FK
+        boolean is_active
+    }
+
+    DOCTOR_AVAILABILITY {
+        uuid availability_id PK
+        uuid doctor_id FK
+        uuid facility_id FK
+        date available_date
+        time start_time
+        time end_time
+        integer slot_duration_minutes
+        string recurrence_rule
+        boolean is_active
+    }
+
+    APPOINTMENT {
+        uuid appointment_id PK
+        uuid patient_id FK
+        uuid doctor_id FK
+        uuid facility_id FK
+        uuid originating_request_id FK
+        string booking_reference UK
+        string appointment_mode
+        string status
+        timestamp start_at
+        timestamp end_at
+        string timezone
+        string notes
+        string cancellation_reason
+        timestamp booked_at
+        timestamp updated_at
+    }
+
+    APPOINTMENT_SERVICE {
+        uuid appointment_service_id PK
+        uuid appointment_id FK
+        uuid service_id FK
+        integer quantity
+        string status
+    }
+
+    APPOINTMENT_STATUS_HISTORY {
+        uuid status_history_id PK
+        uuid appointment_id FK
+        string status
+        string reason
+        timestamp changed_at
+        uuid changed_by_account_id
+    }
+
+    APPOINTMENT_ACTION {
+        uuid action_id PK
+        uuid appointment_id FK
+        uuid account_id FK
+        string action_type
+        string old_status
+        string new_status
+        timestamp action_at
+        string metadata
+    }
+
+    SERVICE_REQUEST {
+        uuid request_id PK
+        uuid patient_id FK
+        uuid service_id FK
+        uuid doctor_id FK
+        uuid appointment_id FK
+        string request_number UK
+        string request_type
+        string status
+        string priority
+        text reason
+        timestamp requested_at
+        timestamp expires_at
+    }
+
+    SERVICE_REQUEST_STATUS_HISTORY {
+        uuid status_history_id PK
+        uuid request_id FK
+        string status
+        string reason
+        timestamp changed_at
+    }
+
+    REQUEST_RESULT {
+        uuid result_id PK
+        uuid request_id FK
+        string result_status
+        text summary
+        timestamp reported_at
+        boolean is_released_to_patient
+    }
+
+    RESULT_DOCUMENT {
+        uuid document_id PK
+        uuid result_id FK
+        string document_type
+        string storage_key
+        string mime_type
+        string original_name
+        bigint file_size
+        timestamp uploaded_at
+    }
